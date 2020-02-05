@@ -8,6 +8,12 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.Prefabs.HandPointer
     public class HandPointer : MonoBehaviour
     {
         [SerializeField]
+        public OVRInput.Controller Controller = OVRInput.Controller.None;
+
+        [SerializeField]
+        public OVRInput.Button PointerButton = OVRInput.Button.PrimaryIndexTrigger;
+
+        [SerializeField]
         public Cursor.Cursor Cursor;
 
         [SerializeField]
@@ -39,25 +45,35 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.Prefabs.HandPointer
             }
         }
 
-        private void Update()
+        private void LateUpdate()
         {
             _lineRenderer.SetPosition(0, this.transform.position);
             _lineRenderer.SetPosition(1, this.transform.position + (this.transform.forward * PointerLength));
 
-            if (Cursor != null)
+            if (Cursor)
             {
-                RaycastHit hit;
+                Cursor.Controller = this.Controller;
+                Cursor.PointerButton = this.PointerButton;
+            }
+            RaycastHit hit;
 
-                Ray ray = new Ray(this.transform.position, this.transform.forward);
+            Ray ray = new Ray(this.transform.position, this.transform.forward);
 
-                if (Physics.Raycast(ray, out hit, MaxDistance, LayerMask))
+            if (Physics.Raycast(ray, out hit, MaxDistance, LayerMask))
+            {
+                if (Cursor)
                 {
                     Cursor.Show(hit);
                 }
-                else
+
+                if (hit.distance < PointerLength)
                 {
-                    Cursor.Hide();
+                    _lineRenderer.SetPosition(1, this.transform.position + (this.transform.forward * hit.distance));
                 }
+            }
+            else if (Cursor)
+            {
+                Cursor.Hide();
             }
         }
     }

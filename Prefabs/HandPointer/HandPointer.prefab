@@ -44,10 +44,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9631067c03be69428d0309ef3447d00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Controller: 0
+  PointerButton: 8192
   Cursor: {fileID: 4340422295416937227, guid: b30f4a32f355df141ad34185367cb7d8, type: 3}
   MaxDistance: 10
-  LayerMask: -257
-  LineLength: 1
+  LayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  PointerLength: 1
 --- !u!120 &3433699630203394778
 LineRenderer:
   m_ObjectHideFlags: 0
