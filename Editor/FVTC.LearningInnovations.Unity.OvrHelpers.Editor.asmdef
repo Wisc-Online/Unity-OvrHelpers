@@ -1,0 +1,16 @@
+{
+    "name": "FVTC.LearningInnovations.Unity.OvrHelpers.Editor",
+    "references": [
+        "GUID:11119f7b0066ea34fa9d08fbcad546ca"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
+}
