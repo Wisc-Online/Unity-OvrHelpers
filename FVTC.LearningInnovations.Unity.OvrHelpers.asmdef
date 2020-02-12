@@ -1,7 +1,8 @@
 {
     "name": "FVTC.LearningInnovations.Unity.OvrHelpers",
     "references": [
-        "GUID:f64c9ebcd7899c3448a08dc9f9ddbe30"
+        "GUID:f64c9ebcd7899c3448a08dc9f9ddbe30",
+        "GUID:ad4413cc75e9ec5408e08629d03aeeb0"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
