@@ -31,8 +31,6 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.DistanceGrabbable
 
         public DistanceGrabbable CurrentGrabbable { get; private set; }
 
-
-
         void Update()
         {
             if (OVRInput.Get(this.Button, this.Controller))
