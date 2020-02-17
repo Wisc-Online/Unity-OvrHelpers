@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace FVTC.LearningInnovations.Unity.OvrHelpers.DistanceGrabbable
 {
-    public class DistanceGrabbable : MonoBehaviour
+    public class DistanceGrabbable : DistanceGrabbableBase
     {
         [Header("Grab Settings")]
         [SerializeField]
@@ -30,29 +30,23 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.DistanceGrabbable
         public float TractorBeamTargetLockRotation = 15f;
 
 
-        public DistanceGrabber Grabber { get; private set; }
+        [Header("Snap Settings")]
+        [SerializeField]
+        public Vector3 PositionOffset;
 
-        public int? OriginalLayer { get; private set; }
+        [SerializeField]
+        public Vector3 RotationOffset;
 
-        public bool IsGrabbed { get { return Grabber != null; } }
 
-        public virtual void GrabStart(DistanceGrabber grabber)
+        protected Pose _lastGrabberTargetPose;
+
+
+        public override void GrabStart(DistanceGrabber grabber)
         {
-            this.Grabber = grabber;
+            base.GrabStart(grabber);
 
-            OriginalLayer = null;
 
-            if (!string.IsNullOrWhiteSpace(grabber.GrabbingLayerName))
-            {
-                int grabbingLayer = LayerMask.NameToLayer(grabber.GrabbingLayerName);
 
-                if (grabbingLayer > -1)
-                {
-                    this.OriginalLayer = this.gameObject.layer;
-
-                    this.gameObject.layer = grabbingLayer;
-                }
-            }
 
             var target = Grabber.GetTarget();
 
@@ -60,10 +54,11 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.DistanceGrabbable
             _lastGrabberTargetPose.rotation = target.rotation;
         }
 
-        Pose _lastGrabberTargetPose;
 
-        public virtual void GrabUpdate()
+        public override void GrabUpdate()
         {
+            base.GrabUpdate();
+
             Transform target = Grabber.GetTarget();
 
             GrabUpdatePosition(target);
@@ -99,21 +94,43 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.DistanceGrabbable
 
         protected virtual void GrabUpdateRotationSnapToTarget(Transform target)
         {
-            transform.rotation = target.transform.rotation;
+            GrabUpdateRotationSnapToTarget(GetTargetRotation(target));
+        }
+
+        private void GrabUpdateRotationSnapToTarget(Quaternion targetRotation)
+        {
+            transform.rotation = targetRotation;
         }
 
         protected virtual void GrabUpdateRotationTractorBeam(Transform target)
         {
-            float degreesBetweenTargetAndGrabbable = Vector3.Angle(transform.forward, target.transform.forward);
+            Quaternion targetRotation = GetTargetRotation(target);
+
+            float degreesBetweenTargetAndGrabbable = Quaternion.Angle(targetRotation, transform.rotation);
 
             if (degreesBetweenTargetAndGrabbable <= TractorBeamTargetLockRotation)
             {
-                GrabUpdateRotationSnapToTarget(target);
+                GrabUpdateRotationSnapToTarget(targetRotation);
             }
             else
             {
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, target.transform.rotation, Time.deltaTime * TractorBeamRotationSpeed);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, Time.deltaTime * TractorBeamRotationSpeed);
             }
+        }
+
+
+        private Quaternion GetTargetRotation(Transform target)
+        {
+            Quaternion targetRotation = target.rotation;
+
+            if (RotationOffset != Vector3.zero)
+            {
+                Quaternion offsetRotation = Quaternion.Euler(RotationOffset);
+
+                targetRotation = targetRotation * offsetRotation;
+            }
+
+            return targetRotation;
         }
 
         protected virtual void GrabUpdatePosition(Transform target)
@@ -133,9 +150,15 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.DistanceGrabbable
             }
         }
 
+
         protected virtual void GrabUpdatePositionSnapToTarget(Transform target)
         {
-            transform.position = target.transform.position;
+            GrabUpdatePositionSnapToTarget(GetTargetPosition(target));
+        }
+
+        protected virtual void GrabUpdatePositionSnapToTarget(Vector3 target)
+        {
+            transform.position = target;
         }
 
         protected virtual void GrabUpdatePositionPreserveDistance(Transform target)
@@ -145,28 +168,40 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.DistanceGrabbable
             transform.position = target.position + (target.forward * distance);
         }
 
+        // used to indicate that the grabbable was at one point close enough to 
+        // 'snap' to the target.  Therefore any subsequent updates should keep it
+        // 'snapped' to the target.
+        private bool _tractorBeamPositionSnapOverride = false;
+
         protected virtual void GrabUpdatePositionTractorBeam(Transform target)
         {
-            var distanceFromTargetToGrabbable = (transform.position - target.position).magnitude;
+            Vector3 targetPosition = GetTargetPosition(target);
 
-            if (distanceFromTargetToGrabbable <= TractorBeamTargetLockDistance)
+            if (_tractorBeamPositionSnapOverride || Vector3.Distance(targetPosition, transform.position) <= TractorBeamTargetLockDistance)
             {
-                GrabUpdatePositionSnapToTarget(target);
+                _tractorBeamPositionSnapOverride = true;
+                GrabUpdatePositionSnapToTarget(targetPosition);
             }
             else
             {
-                transform.position = Vector3.MoveTowards(transform.position, target.transform.position, Time.deltaTime * TractorBeamMovementSpeed);
+                transform.position = Vector3.MoveTowards(transform.position, targetPosition, Time.deltaTime * TractorBeamMovementSpeed);
             }
         }
 
-        public virtual void GrabEnd()
+        private Vector3 GetTargetPosition(Transform target)
         {
-            if (OriginalLayer.HasValue)
-            {
-                this.gameObject.layer = OriginalLayer.Value;
-            }
+            Vector3 worldSpaceOffsetPosition = target.TransformDirection(this.PositionOffset);
 
-            this.Grabber = null;
+            Vector3 targetPosition = (target.position + worldSpaceOffsetPosition);
+            return targetPosition;
+        }
+
+        public override void GrabEnd()
+        {
+            base.GrabEnd();
+
+            // make sure to set this back so tractor-beaming works again.
+            _tractorBeamPositionSnapOverride = false;
         }
     }
 }

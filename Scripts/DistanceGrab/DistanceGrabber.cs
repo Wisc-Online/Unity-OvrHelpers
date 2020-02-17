@@ -29,7 +29,15 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.DistanceGrabbable
 
         #endregion
 
-        public DistanceGrabbable CurrentGrabbable { get; private set; }
+        public DistanceGrabbableBase CurrentGrabbable { get; private set; }
+
+        public bool IsGrabbing
+        {
+            get
+            {
+                return CurrentGrabbable != null;
+            }
+        }
 
         void Update()
         {
@@ -47,15 +55,15 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.DistanceGrabbable
                 else
                 {
                     // check to initiate a grab
-                    DistanceGrabbable grabbable;
+                    DistanceGrabbableBase grabbable;
 
                     Ray ray = new Ray(this.transform.position, this.transform.forward);
                     RaycastHit hit;
 
                     if (Physics.Raycast(ray, out hit, this.MaxGrabDistance, this.GrabLayerMask))
                     {
-                        grabbable = hit.transform.gameObject.GetComponentInParent<DistanceGrabbable>();
-                        
+                        grabbable = hit.transform.gameObject.GetComponentInParent<DistanceGrabbableBase>();
+
                         if (grabbable != null && !grabbable.IsGrabbed)
                         {
                             grabbable.GrabStart(this);

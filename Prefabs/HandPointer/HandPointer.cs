@@ -25,6 +25,9 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.Prefabs.HandPointer
         [SerializeField]
         public float PointerLength = 1;
 
+        [SerializeField]
+        public Vector3 PointerStartOffset = Vector3.zero;
+
         LineRenderer _lineRenderer;
 
         private void Start()
@@ -47,8 +50,13 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.Prefabs.HandPointer
 
         private void LateUpdate()
         {
-            _lineRenderer.SetPosition(0, this.transform.position);
-            _lineRenderer.SetPosition(1, this.transform.position + (this.transform.forward * PointerLength));
+            Vector3 lineStart, lineEnd;
+
+            lineStart = this.transform.position + transform.TransformDirection(PointerStartOffset);
+            lineEnd = lineStart + (transform.forward * PointerLength);
+
+            _lineRenderer.SetPosition(0, lineStart);
+            _lineRenderer.SetPosition(1, lineEnd);
 
             if (Cursor)
             {
