@@ -11,20 +11,15 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.DistanceGrabbable
 
         public bool IsGrabbed { get { return Grabber != null; } }
 
-        public virtual void GrabStart(DistanceGrabber grabber)
+        public virtual void GrabStart(DistanceGrabStartInfo grabInfo)
         {
-            Grabber = grabber;
+            Grabber = grabInfo.Grabber;
 
             OriginalLayer = null;
 
-            if (!string.IsNullOrWhiteSpace(grabber.GrabbingLayerName))
+            if (Grabber.GrabbingLayer != null)
             {
-                int grabbingLayer = LayerMask.NameToLayer(grabber.GrabbingLayerName);
-
-                if (grabbingLayer > -1)
-                {
-                    MoveAllObjectsToLayer(grabbingLayer);
-                }
+                MoveAllObjectsToLayer(Grabber.GrabbingLayer.layerIndex);
             }
         }
 

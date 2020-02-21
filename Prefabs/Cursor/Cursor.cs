@@ -8,33 +8,47 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.Prefabs.Cursor
 {
     public class Cursor : MonoBehaviour
     {
-
         [SerializeField]
         public OVRInput.Controller Controller = OVRInput.Controller.None;
 
         [SerializeField]
-        public OVRInput.Button PointerButton = OVRInput.Button.PrimaryHandTrigger;
+        public OVRInput.Button LeftClickButton = OVRInput.Button.PrimaryHandTrigger;
+
+        [SerializeField]
+        public OVRInput.Button RightClickButton = OVRInput.Button.None;
+
 
         GameObject _target;
-        bool isButtonDown;
+        bool isLeftButtonDown, isRightButtonDown;
 
         void Update()
         {
             if (_target && Controller != OVRInput.Controller.None)
             {
+                HandleButtonEvents(LeftClickButton, PointerEventData.InputButton.Left, ref isLeftButtonDown);
+
+                HandleButtonEvents(RightClickButton, PointerEventData.InputButton.Right, ref isRightButtonDown);
+            }
+        }
+
+        private void HandleButtonEvents(OVRInput.Button button, PointerEventData.InputButton mouseButton, ref bool isButtonDown)
+        {
+            if (button != OVRInput.Button.None && Controller != OVRInput.Controller.None)
+            {
 
                 PointerEventData e = new PointerEventData(EventSystem.current);
 
-                if (OVRInput.GetDown(this.PointerButton, this.Controller))
+                e.button = mouseButton;
+
+                if (OVRInput.GetDown(button, this.Controller))
                 {
                     OnPointerDown(_target, e);
 
                     isButtonDown = true;
                 }
 
-                if (OVRInput.GetUp(this.PointerButton, this.Controller))
+                if (OVRInput.GetUp(button, this.Controller))
                 {
-
                     OnPointerUp(_target, e);
 
                     if (isButtonDown)
@@ -46,7 +60,6 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.Prefabs.Cursor
                 }
             }
         }
-
 
         public virtual void Hide()
         {
@@ -60,7 +73,8 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.Prefabs.Cursor
             }
 
             _target = null;
-            isButtonDown = false;
+            isLeftButtonDown = false;
+            isRightButtonDown = false;
         }
 
         public virtual void Show(RaycastHit hit)

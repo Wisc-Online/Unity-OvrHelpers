@@ -19,13 +19,17 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.DistanceGrabbable
         public LayerMask GrabLayerMask = ~0;
 
         [SerializeField]
-        [Tooltip("The Layer Name the Grabbable will be changed while being grabbed.")]
-        public string GrabbingLayerName;
+        [Tooltip("The Layer the Grabbable will be changed while being grabbed.")]
+        public Layer GrabbingLayer;
 
         [Header("Tractor Beam Settings")]
         [SerializeField]
         [Tooltip("The target to which the grabbable will move to.  If unset, grabbable will move/rotate to the this object's transform.")]
         public Transform TractorBeamTarget;
+
+        [SerializeField]
+        public OVRInput.Axis2D TractorBeamAxis = OVRInput.Axis2D.None;
+
 
         #endregion
 
@@ -66,7 +70,9 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.DistanceGrabbable
 
                         if (grabbable != null && !grabbable.IsGrabbed)
                         {
-                            grabbable.GrabStart(this);
+                            DistanceGrabStartInfo grabInfo = new DistanceGrabStartInfo(this, hit.point);
+
+                            grabbable.GrabStart(grabInfo);
 
                             this.CurrentGrabbable = grabbable;
                         }

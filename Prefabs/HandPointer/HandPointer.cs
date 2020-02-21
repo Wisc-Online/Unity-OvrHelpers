@@ -1,17 +1,20 @@
-﻿using System.Collections;
+﻿using FVTC.LearningInnovations.Unity.Extensions;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace FVTC.LearningInnovations.Unity.OvrHelpers.Prefabs.HandPointer
 {
-    [RequireComponent(typeof(LineRenderer))]
     public class HandPointer : MonoBehaviour
     {
         [SerializeField]
         public OVRInput.Controller Controller = OVRInput.Controller.None;
 
         [SerializeField]
-        public OVRInput.Button PointerButton = OVRInput.Button.PrimaryIndexTrigger;
+        public OVRInput.Button LeftClickButton = OVRInput.Button.PrimaryIndexTrigger;
+
+        [SerializeField]
+        public OVRInput.Button RightClickButton = OVRInput.Button.PrimaryHandTrigger;
 
         [SerializeField]
         public Cursor.Cursor Cursor;
@@ -26,62 +29,59 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.Prefabs.HandPointer
         public float PointerLength = 1;
 
         [SerializeField]
-        public Vector3 PointerStartOffset = Vector3.zero;
-
-        LineRenderer _lineRenderer;
+        public HandPointerVisualizer Visualizer;
 
         private void Start()
         {
-            _lineRenderer = GetComponent<LineRenderer>();
-
-            if (Cursor != null)
+            if (Cursor != null && Cursor.IsPrefab())
             {
-                if (Cursor.gameObject.scene.name == null)
-                {
-                    // must be a prefab, create an instance
+                // must be a prefab, create an instance
 
-                    Cursor.Cursor cursorInstance = Instantiate<Cursor.Cursor>(this.Cursor);
-                    cursorInstance.Hide();
+                Cursor.Cursor cursorInstance = Instantiate<Cursor.Cursor>(this.Cursor);
+                cursorInstance.Hide();
 
-                    this.Cursor = cursorInstance;
-                }
+                this.Cursor = cursorInstance;
+            }
+
+            if (Visualizer && Visualizer.IsPrefab())
+            {
+                HandPointerVisualizer v = Instantiate(this.Visualizer, this.transform);
+
+                this.Visualizer = v;
             }
         }
 
-        private void LateUpdate()
+        private void Update()
         {
-            Vector3 lineStart, lineEnd;
-
-            lineStart = this.transform.position + transform.TransformDirection(PointerStartOffset);
-            lineEnd = lineStart + (transform.forward * PointerLength);
-
-            _lineRenderer.SetPosition(0, lineStart);
-            _lineRenderer.SetPosition(1, lineEnd);
-
             if (Cursor)
             {
                 Cursor.Controller = this.Controller;
-                Cursor.PointerButton = this.PointerButton;
+                Cursor.LeftClickButton = this.LeftClickButton;
+                Cursor.RightClickButton = this.RightClickButton;
             }
+
+            RaycastHit? nullHit = null;
             RaycastHit hit;
 
             Ray ray = new Ray(this.transform.position, this.transform.forward);
 
             if (Physics.Raycast(ray, out hit, MaxDistance, LayerMask))
             {
+                nullHit = hit;
+
                 if (Cursor)
                 {
                     Cursor.Show(hit);
-                }
-
-                if (hit.distance < PointerLength)
-                {
-                    _lineRenderer.SetPosition(1, this.transform.position + (this.transform.forward * hit.distance));
                 }
             }
             else if (Cursor)
             {
                 Cursor.Hide();
+            }
+
+            if (Visualizer)
+            {
+                Visualizer.Visualize(new HandPointerUpdateInfo(this, nullHit));
             }
         }
     }
