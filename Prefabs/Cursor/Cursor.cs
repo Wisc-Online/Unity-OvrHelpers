@@ -18,6 +18,8 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.Prefabs.Cursor
         public OVRInput.Button RightClickButton = OVRInput.Button.None;
 
 
+        public HandPointer.HandPointer Pointer { get; internal set; }
+
         GameObject _target;
         bool isLeftButtonDown, isRightButtonDown;
 
@@ -36,7 +38,9 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.Prefabs.Cursor
             if (button != OVRInput.Button.None && Controller != OVRInput.Controller.None)
             {
 
-                PointerEventData e = new PointerEventData(EventSystem.current);
+                PointerEventData e = new CursorPointerEventData(this, EventSystem.current);
+
+
 
                 e.button = mouseButton;
 
@@ -88,7 +92,7 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.Prefabs.Cursor
             {
                 GameObject target = hit.collider.gameObject;
 
-                PointerEventData e = new PointerEventData(EventSystem.current);
+                PointerEventData e = new CursorPointerEventData(this, EventSystem.current);
 
                 if (!_target)
                 {

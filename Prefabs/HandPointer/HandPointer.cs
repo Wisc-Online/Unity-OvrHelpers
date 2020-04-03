@@ -24,12 +24,11 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.Prefabs.HandPointer
 
         [SerializeField]
         public LayerMask LayerMask;
-
-        [SerializeField]
-        public float PointerLength = 1;
-
+        
         [SerializeField]
         public HandPointerVisualizer Visualizer;
+
+
 
         private void Start()
         {
@@ -41,6 +40,13 @@ namespace FVTC.LearningInnovations.Unity.OvrHelpers.Prefabs.HandPointer
                 cursorInstance.Hide();
 
                 this.Cursor = cursorInstance;
+
+                
+            }
+
+            if (this.Cursor)
+            {
+                this.Cursor.Pointer = this;
             }
 
             if (Visualizer && Visualizer.IsPrefab())
